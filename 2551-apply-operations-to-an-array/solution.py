@@ -4,6 +4,6 @@ class Solution:
             if nums[i] == nums[i+1]:
                 nums[i] *=2
                 nums[i+1] = 0
-        non_zero = [num for num in nums if num != 0]
-        zeros = [num for num in nums if num == 0]
-        return non_zero + zeros
+        ans = [num for num in nums if num != 0]
+        ans +=  [0] * (len(nums)-len(ans))
+        return ans
