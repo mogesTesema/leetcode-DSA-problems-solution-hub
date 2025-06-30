@@ -4,8 +4,8 @@ class Solution:
         left = 0
         right = len(nums)-1
         while left <= right:
-            if nums[left]*nums[left] == c or nums[right]*nums[right] == c:
-                return True 
+            # if nums[left]*nums[left] == c and nums[right]*nums[right] == c:
+            #     return True 
             sum = nums[left]*nums[left] + nums[right]*nums[right]
             if sum == c:
                 return True
