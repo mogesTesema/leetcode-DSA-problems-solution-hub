@@ -8,12 +8,9 @@ class Solution:
     def isUnivalTree(self, root: Optional[TreeNode]) -> bool:
       
         queue = deque([root])
-        target = None
-        if root:
-            target = root.val
+        target = root.val
         while queue:
             node = queue.popleft()
-            
             if target != node.val:
                 return False
             if node.right:
