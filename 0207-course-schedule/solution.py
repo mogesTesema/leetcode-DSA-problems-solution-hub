@@ -1,31 +1,25 @@
 class Solution:
     def canFinish(self, numCourses: int, prerequisites: List[List[int]]) -> bool:
-        courses = defaultdict(list)
-        for key, value in prerequisites:
-            courses[key].append(value)
+        courses = [[] for _ in range(numCourses)]
+        inDegree = [0]*numCourses
+        for course, prerq in prerequisites:
+            courses[prerq].append(course)
+            inDegree[course] += 1
 
-        visited = set()
-        cycle = set()
-
-
-        def dfs(c):
-            if c in cycle:
-                return False
-            if c in visited:
-                return True
-            if not courses[c]:
-                return True
-            
-            cycle.add(c)
-            for pre in courses[c]:
-                if not dfs(pre):
-                    return False
-            cycle.remove(c)
-            visited.add(c)
-            return True
+        taken = set()
+        queue = deque()
+       
+        for i in range(numCourses):
+            if inDegree[i] == 0:
+                queue.append(i)
+        # print(queue)
+        while queue:
+            take = queue.popleft()
+            taken.add(take)
+            for dep in courses[take]:
+                inDegree[dep] -= 1
+                if inDegree[dep] == 0:
+                    queue.append(dep)
+        return len(taken) == numCourses
                 
 
-        for course in prerequisites:
-            if not dfs(course[1]):
-                return False
-        return True
