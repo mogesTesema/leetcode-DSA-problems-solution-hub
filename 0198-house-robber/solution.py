@@ -2,7 +2,7 @@ class Solution:
     def rob(self, nums: List[int]) -> int:
         memo = defaultdict(int)
         n = len(nums) - 1
-        @cache
+       
         def dp(i):
             if i > n:
                 return 0
