@@ -54,5 +54,4 @@ jobs:
           # Commit changes if any
           git add README.md
           git commit -m "[LeetCode Sync] Updated problem counts" || echo "No changes to README.md"
-          git pull --rebase origin main
-          git push origin main
+          git push origin main --force
