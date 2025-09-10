@@ -1,19 +1,50 @@
-name: Sync LeetCode
+name: Sync LeetCode & Update README
 
 on:
+  # Runs every day at 06:00 UTC
   schedule:
-    - cron: "0 6 * * *" # Runs every day at 06:00 UTC
-  workflow_dispatch: # Allows manual trigger
+    - cron: "0 6 * * *"
+  # Allows manual trigger from Actions tab
+  workflow_dispatch:
 
 jobs:
   sync:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: joshcai/leetcode-sync@v1.7
+      # Step 1: Checkout the repo so we can modify README.md later
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      # Step 2: Run leetcode-sync to fetch solutions + problem statements
+      - name: Fetch LeetCode Solutions
+        uses: joshcai/leetcode-sync@v1.7
         with:
           github-token: ${{ github.token }}
-          leetcode-csrf-token: ${{ secrets.LEETCODE_CSRF_TOKEN }}
           leetcode-session: ${{ secrets.LEETCODE_SESSION }}
-          destination-folder: leetcode-solutions
+          leetcode-csrf-token: ${{ secrets.LEETCODE_CSRF_TOKEN }}
+          destination-folder: .   # 👈 root folder instead of leetcode-solutions
           verbose: true
           commit-header: "[LeetCode Sync]"
+
+      # Step 3: Count problems and update README.md
+      - name: Update Problem Counts in README
+        run: |
+          TOTAL=$(find . -type f -name "solution.*" | wc -l)
+          EASY=$(grep -r '"difficulty": "Easy"' . | wc -l || echo 0)
+          MEDIUM=$(grep -r '"difficulty": "Medium"' . | wc -l || echo 0)
+          HARD=$(grep -r '"difficulty": "Hard"' . | wc -l || echo 0)
+
+          echo "Found $TOTAL problems: $EASY Easy, $MEDIUM Medium, $HARD Hard"
+
+          # Update counts in README.md
+          sed -i "s|\(<span id=\"easy-count\">\)[0-9]*|\1$EASY|" README.md
+          sed -i "s|\(<span id=\"medium-count\">\)[0-9]*|\1$MEDIUM|" README.md
+          sed -i "s|\(<span id=\"hard-count\">\)[0-9]*|\1$HARD|" README.md
+          sed -i "s|\(<span id=\"total-count\">\)[0-9]*|\1$TOTAL|" README.md
+
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          git commit -m "[LeetCode Sync] Updated problem counts" || echo "No changes to README.md"
+          git push
