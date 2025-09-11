@@ -15,28 +15,30 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Fetch LeetCode Solutions (forked action)
-        id: fetch
-        uses: QasimWani/leetcode-sync@main   # <-- Use this fork, test if it works
+      - name: Install Python
+        uses: actions/setup-python@v5
         with:
-          github-token: ${{ secrets.PAT_TOKEN }}
-          leetcode-session: ${{ secrets.LEETCODE_SESSION }}
-          leetcode-csrf-token: ${{ secrets.LEETCODE_CSRF_TOKEN }}
-          destination-folder: leetcode
-          verbose: true
-          commit-header: "[LeetCode Sync]"
+          python-version: "3.x"
+
+      - name: Fetch LeetCode Solutions
+        env:
+          LEETCODE_SESSION: ${{ secrets.LEETCODE_SESSION }}
+          LEETCODE_CSRF_TOKEN: ${{ secrets.LEETCODE_CSRF_TOKEN }}
+        run: |
+          pip install requests
+          python scripts/fetch_leetcode.py
 
       - name: Update Problem Counts in README
         run: |
           if [ ! -d "leetcode" ] || [ $(find leetcode -type f | wc -l) -eq 0 ]; then
-            echo "No solutions fetched. Skipping to avoid deletion."
+            echo "No solutions fetched. Skipping commit."
             exit 0
           fi
 
-          TOTAL=$(find leetcode -type f \( -name "solution.*" -o -name "*.py" -o -name "*.cpp" -o -name "*.java" \) | wc -l)
-          EASY=$(grep -r -c '"difficulty": "Easy"' leetcode || true | awk '{s+=$1} END {print s}')
-          MEDIUM=$(grep -r -c '"difficulty": "Medium"' leetcode || true | awk '{s+=$1} END {print s}')
-          HARD=$(grep -r -c '"difficulty": "Hard"' leetcode || true | awk '{s+=$1} END {print s}')
+          TOTAL=$(find leetcode -type f | wc -l)
+          EASY=$(grep -r '"difficulty": "Easy"' leetcode || true | wc -l)
+          MEDIUM=$(grep -r '"difficulty": "Medium"' leetcode || true | wc -l)
+          HARD=$(grep -r '"difficulty": "Hard"' leetcode || true | wc -l)
 
           echo "Found $TOTAL problems: $EASY Easy, $MEDIUM Medium, $HARD Hard"
 
@@ -55,5 +57,5 @@ jobs:
             exit 0
           fi
 
-          git commit -m "[Leetcode Sync] Updated solutions & counts"
+          git commit -m "[LeetCode Sync] Updated solutions & counts"
           git push origin main
