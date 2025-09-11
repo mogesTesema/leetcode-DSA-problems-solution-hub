@@ -1,8 +1,10 @@
 name: Sync LeetCode & Update README
 
 on:
+  # Run daily at 06:00 UTC
   schedule:
     - cron: "0 6 * * *"
+  # Allows manual trigger
   workflow_dispatch:
 
 jobs:
@@ -10,39 +12,48 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      # Step 1: Checkout repository
+      - name: Checkout Repository
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
+      # Step 2: Fetch LeetCode solutions
       - name: Fetch LeetCode Solutions
         uses: joshcai/leetcode-sync@v1.7
         with:
-          github-token: ${{ secrets.PAT_TOKEN }}
+          github-token: ${{ secrets.PAT_TOKEN }}   # Use your PAT
           leetcode-session: ${{ secrets.LEETCODE_SESSION }}
           leetcode-csrf-token: ${{ secrets.LEETCODE_CSRF_TOKEN }}
-          destination-folder: leetcodeSolutions   # Put synced files in subfolder
+          destination-folder: leetcodeSolutionsHub   # Save directly in repo root
           verbose: true
           commit-header: "[LeetCode Sync]"
 
+      # Step 3: Count problems and update README
       - name: Update Problem Counts in README
         run: |
-          TOTAL=$(find leetcode -type f \( -name "solution.*" -o -name "*.py" -o -name "*.cpp" -o -name "*.java" \) | wc -l)
-          EASY=$(grep -r '"difficulty": "Easy"' leetcode | wc -l || echo 0)
-          MEDIUM=$(grep -r '"difficulty": "Medium"' leetcode | wc -l || echo 0)
-          HARD=$(grep -r '"difficulty": "Hard"' leetcode | wc -l || echo 0)
+          # Count total solutions by checking common solution files
+          TOTAL=$(find . -type f \( -name "solution.*" -o -name "*.py" -o -name "*.cpp" -o -name "*.java" \) | wc -l)
+          EASY=$(grep -r '"difficulty": "Easy"' . | wc -l || echo 0)
+          MEDIUM=$(grep -r '"difficulty": "Medium"' . | wc -l || echo 0)
+          HARD=$(grep -r '"difficulty": "Hard"' . | wc -l || echo 0)
 
           echo "Found $TOTAL problems: $EASY Easy, $MEDIUM Medium, $HARD Hard"
 
+          # Update README.md placeholders
           sed -i "s|<span id=\"easy-count\">[0-9]*</span>|<span id=\"easy-count\">$EASY</span>|" README.md
           sed -i "s|<span id=\"medium-count\">[0-9]*</span>|<span id=\"medium-count\">$MEDIUM</span>|" README.md
           sed -i "s|<span id=\"hard-count\">[0-9]*</span>|<span id=\"hard-count\">$HARD</span>|" README.md
           sed -i "s|<span id=\"total-count\">[0-9]*</span>|<span id=\"total-count\">$TOTAL</span>|" README.md
 
+          # Configure git to use PAT for push
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # Set PAT-based remote
           git remote set-url origin https://${{ secrets.PAT_TOKEN }}@github.com/mogesTesema/leetcode-DSA-problems-solution-hub.git
 
-          git add leetcode README.md
-          git commit -m "[LeetCode Sync] Update solutions & counts" || echo "No changes to commit"
+          # Commit changes if any
+          git add README.md
+          git commit -m "[LeetCode Sync] Updated problem counts" || echo "No changes to README.md"
           git push origin main
