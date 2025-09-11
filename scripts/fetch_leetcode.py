@@ -1,5 +1,10 @@
-import os, json, requests, pathlib, re
+import os
+import json
+import requests
+import pathlib
+import re
 
+# ------------------ CONFIG ------------------
 LEETCODE_SESSION = os.environ.get("LEETCODE_SESSION")
 LEETCODE_CSRF = os.environ.get("LEETCODE_CSRF_TOKEN")
 DEST = pathlib.Path("leetcode")
@@ -12,9 +17,10 @@ HEADERS = {
     "Content-Type": "application/json",
 }
 
+# GraphQL query to fetch submissions
 GRAPHQL_URL = "https://leetcode.com/graphql"
-QUERY = """
-query submissions($offset: Int!, $limit: Int!) {
+SUBMISSIONS_QUERY = """
+query submissionList($offset: Int!, $limit: Int!) {
   submissionList(offset: $offset, limit: $limit) {
     submissions {
       id
@@ -30,35 +36,69 @@ query submissions($offset: Int!, $limit: Int!) {
 }
 """
 
-def fetch_all():
+# GraphQL query to get problem difficulty
+QUESTION_QUERY = """
+query getQuestionDetail($titleSlug: String!) {
+  question(titleSlug: $titleSlug) {
+    difficulty
+  }
+}
+"""
+
+def fetch_all_submissions():
     submissions = []
     offset = 0
     while True:
-        resp = requests.post(GRAPHQL_URL, headers=HEADERS, json={"query": QUERY, "variables": {"offset": offset, "limit": 20}})
+        resp = requests.post(
+            GRAPHQL_URL,
+            headers=HEADERS,
+            json={"query": SUBMISSIONS_QUERY, "variables": {"offset": offset, "limit": 20}}
+        )
         data = resp.json()
-        if "data" not in data or "submissionList" not in data["data"]:
-            print("No submissionList found in response. Possibly auth issue.")
+        sublist = data.get("data", {}).get("submissionList", {}).get("submissions")
+        if not sublist:
             break
-        page = data["data"]["submissionList"]
-        subs = page.get("submissions", [])
-        if not subs:
-            break
-        submissions.extend(subs)
-        if not page.get("hasNext"):
+        submissions.extend(sublist)
+        if not data["data"]["submissionList"].get("hasNext", False):
             break
         offset += 20
     return submissions
 
-def save_submissions(submissions):
-    for sub in submissions:
-        if sub["statusDisplay"] != "Accepted":
-            continue
-        slug = re.sub(r"[^a-zA-Z0-9_-]", "_", sub["titleSlug"])
-        ext = {"python3": "py", "cpp": "cpp", "java": "java"}.get(sub["lang"], "txt")
-        file_path = DEST / f"{slug}.{ext}"
-        file_path.write_text(sub["code"])
+def get_difficulty(titleSlug):
+    resp = requests.post(
+        GRAPHQL_URL,
+        headers=HEADERS,
+        json={"query": QUESTION_QUERY, "variables": {"titleSlug": titleSlug}}
+    )
+    data = resp.json()
+    return data.get("data", {}).get("question", {}).get("difficulty", "Unknown")
+
+def save_submission(sub):
+    if sub["statusDisplay"] != "Accepted":
+        return
+    slug = re.sub(r"[^a-zA-Z0-9_-]", "_", sub["titleSlug"])
+    ext = {"python3": "py", "cpp": "cpp", "java": "java"}.get(sub["lang"], "txt")
+    file_path = DEST / f"{slug}.{ext}"
+    file_path.write_text(sub["code"])
+
+    # Save metadata for counting
+    metadata = {
+        "title": sub["title"],
+        "slug": slug,
+        "lang": sub["lang"],
+        "difficulty": get_difficulty(sub["titleSlug"]),
+        "timestamp": sub["timestamp"]
+    }
+    meta_path = DEST / f"{slug}.json"
+    meta_path.write_text(json.dumps(metadata, indent=2))
 
 if __name__ == "__main__":
-    subs = fetch_all()
-    print(f"Fetched {len(subs)} submissions.")
-    save_submissions(subs)
+    submissions = fetch_all_submissions()
+    if not submissions:
+        print("No submissions fetched. Exiting.")
+        exit(0)
+
+    for sub in submissions:
+        save_submission(sub)
+
+    print(f"Fetched and saved {len(submissions)} submissions.")
