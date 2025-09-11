@@ -2,7 +2,7 @@ name: Sync LeetCode & Update README
 
 on:
   schedule:
-    - cron: "0 6 * * *" # Every day at 06:00 UTC
+    - cron: "0 6 * * *"
   workflow_dispatch:
 
 jobs:
@@ -10,14 +10,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
+      - name: Checkout repository
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
-      - name: Fetch LeetCode Solutions
+      - name: Fetch LeetCode Solutions (forked action)
         id: fetch
-        uses: joshcai/leetcode-sync@v1.7
+        uses: QasimWani/leetcode-sync@main   # <-- Use this fork, test if it works
         with:
           github-token: ${{ secrets.PAT_TOKEN }}
           leetcode-session: ${{ secrets.LEETCODE_SESSION }}
@@ -29,7 +29,7 @@ jobs:
       - name: Update Problem Counts in README
         run: |
           if [ ! -d "leetcode" ] || [ $(find leetcode -type f | wc -l) -eq 0 ]; then
-            echo "No solutions fetched. Skipping commit."
+            echo "No solutions fetched. Skipping to avoid deletion."
             exit 0
           fi
 
@@ -55,5 +55,5 @@ jobs:
             exit 0
           fi
 
-          git commit -m "[LeetCode Sync] Updated solutions & counts"
-          git push origin ${{ github.ref_name }}
+          git commit -m "[Leetcode Sync] Updated solutions & counts"
+          git push origin main
