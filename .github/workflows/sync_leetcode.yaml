@@ -1,8 +1,10 @@
 name: Sync LeetCode & Update README
 
 on:
+  # Run daily at 06:00 UTC
   schedule:
     - cron: "0 6 * * *"
+  # Allows manual trigger
   workflow_dispatch:
 
 jobs:
@@ -10,52 +12,54 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      # Step 1: Checkout repository
+      - name: Checkout Repository
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.x"
-
+      # Step 2: Fetch LeetCode solutions
       - name: Fetch LeetCode Solutions
-        env:
-          LEETCODE_SESSION: ${{ secrets.LEETCODE_SESSION }}
-          LEETCODE_CSRF_TOKEN: ${{ secrets.LEETCODE_CSRF_TOKEN }}
+        uses: joshcai/leetcode-sync@v1.7
+        with:
+          github-token: ${{ secrets.PAT_TOKEN }}
+          leetcode-session: ${{ secrets.LEETCODE_SESSION }}
+          leetcode-csrf-token: ${{ secrets.LEETCODE_CSRF_TOKEN }}
+          destination-folder: .
+          verbose: true
+          commit-header: "[LeetCode Sync]"
+
+      # Step 3: Count problems and update README
+      - name: Update Problem Counts in README
         run: |
-          pip install requests
-          python scripts/fetch_leetcode.py
+          # Configure git to use PAT for push
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin https://${{ secrets.PAT_TOKEN }}@github.com/mogesTesema/leetcode-DSA-problems-solution-hub.git
 
-      - name: Update README counts
-        run: |
-          if [ ! -d "leetcode" ]; then
-            echo "No submissions folder found. Skipping README update."
-            exit 0
-          fi
+          # Pull the latest changes from the remote main branch before pushing
+          git pull origin main --rebase
 
-          EASY=$(jq -r 'select(.difficulty=="Easy")' leetcode/*.json 2>/dev/null | wc -l || true)
-          MEDIUM=$(jq -r 'select(.difficulty=="Medium")' leetcode/*.json 2>/dev/null | wc -l || true)
-          HARD=$(jq -r 'select(.difficulty=="Hard")' leetcode/*.json 2>/dev/null | wc -l || true)
-          TOTAL=$(($EASY + $MEDIUM + $HARD))
-
+          # Count total solutions by checking common solution files
+          TOTAL=$(find . -type f \( -name "solution.*" -o -name "*.py" -o -name "*.cpp" -o -name "*.java" \) | wc -l)
+          EASY=$(grep -r '"difficulty": "Easy"' . | wc -l || echo 0)
+          MEDIUM=$(grep -r '"difficulty": "Medium"' . | wc -l || echo 0)
+          HARD=$(grep -r '"difficulty": "Hard"' . | wc -l || echo 0)
           echo "Found $TOTAL problems: $EASY Easy, $MEDIUM Medium, $HARD Hard"
 
+          # Update README.md placeholders
           sed -i "s|<span id=\"easy-count\">[0-9]*</span>|<span id=\"easy-count\">$EASY</span>|" README.md
           sed -i "s|<span id=\"medium-count\">[0-9]*</span>|<span id=\"medium-count\">$MEDIUM</span>|" README.md
           sed -i "s|<span id=\"hard-count\">[0-9]*</span>|<span id=\"hard-count\">$HARD</span>|" README.md
           sed -i "s|<span id=\"total-count\">[0-9]*</span>|<span id=\"total-count\">$TOTAL</span>|" README.md
-
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git remote set-url origin https://${{ secrets.PAT_TOKEN }}@github.com/${{ github.repository }}.git
-
-          git add leetcode README.md
-          if git diff --cached --quiet; then
-            echo "No new changes to commit."
-            exit 0
-          fi
-
-          git commit -m "[LeetCode Sync] Updated solutions & counts"
+          
+          # Add and commit the LeetCode solutions fetched by the previous step
+          git add .
+          git commit -m "chore: Sync LeetCode solutions" || echo "No new LeetCode solutions to commit."
+          
+          # Commit changes to README.md if any
+          git add README.md
+          git commit -m "[LeetCode Sync] Updated problem counts" || echo "No changes to README.md"
+          
+          # Push all changes
           git push origin main
