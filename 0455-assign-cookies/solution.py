@@ -2,18 +2,14 @@ class Solution:
     def findContentChildren(self, g: List[int], s: List[int]) -> int:
         g.sort()
         s.sort()
-        left_g = 0
-        left_s = 0
-        counter = 0
-        while left_g < len(g) and left_s < len(s):
-            if g[left_g]<= s[left_s]:
-                counter += 1
-                left_s +=1
-                left_g +=1
+        content = 0
+        child_pointer = 0
+        cookie_pointer = 0
+        while child_pointer < len(g) and cookie_pointer < len(s):
+            if s[cookie_pointer] >= g[child_pointer]:
+                content += 1
+                cookie_pointer += 1
+                child_pointer += 1
             else:
-                left_s += 1
-        return counter
-        
-
-
-        
+                cookie_pointer += 1
+        return content
