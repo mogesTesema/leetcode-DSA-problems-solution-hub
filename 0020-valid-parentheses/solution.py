@@ -1,14 +1,17 @@
 class Solution:
     def isValid(self, s: str) -> bool:
-        ack = []
-        lookfor = {')':'(', '}':'{', ']':'['}
-
-        for p in s:
-            if p in lookfor.values():
-                ack.append(p)
-            elif ack and lookfor[p] == ack[-1]:
-                ack.pop()
+        stack = []
+        signs = {")":"(","}":"{","]":"["}
+        stack = []
+       
+        for sign in s:
+            if sign  in signs.values():
+                stack.append(sign)
             else:
-                return False
+                if stack and signs[sign] == stack[-1]:
+                    stack.pop()
+                else:
+                    return False
+        return True if not stack else False
 
-        return ack == []
+    
