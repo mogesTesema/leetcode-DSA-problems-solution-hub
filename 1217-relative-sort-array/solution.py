@@ -1,19 +1,19 @@
 class Solution:
     def relativeSortArray(self, arr1: List[int], arr2: List[int]) -> List[int]:
-        freq = defaultdict(int)
-        for element in arr1:
-            freq[element] = freq.get(element,0) + 1
-        ans = []
-        for element in arr2:
+        frq = Counter(arr1)
+        
 
-            ans.extend([element]*freq[element])
-            freq[element] = 0
-        unseen = []
-        for item in freq:
-            if freq[item] != 0:
-                unseen.extend([item]*freq[item])
-        unseen.sort()
-        ans.extend(unseen)
-        return ans
-        
-        
+        answer = []
+        excluded = []
+        for arr2_num in arr2:
+            current_nums = [arr2_num] * frq[arr2_num]
+            answer.extend(current_nums)
+
+        for arr1_num in frq:
+            if arr1_num not in arr2:
+                current_nums = [arr1_num] * frq[arr1_num]
+                excluded.extend(current_nums)
+        excluded.sort()
+        answer.extend(excluded)
+    
+        return answer
