@@ -1,22 +1,19 @@
-from collections import deque
-
 class RecentCounter:
 
     def __init__(self):
-        self.counter = deque()  # use deque for efficient pops from the left
+        self.timer = deque()
+        
 
     def ping(self, t: int) -> int:
-        self.counter.append(t)
-        # remove all times older than t - 3000
-        while self.counter[0] < t - 3000:
-            self.counter.popleft()
-        return len(self.counter)
+        min_time = t - 3000
+        self.timer.append(t)
+        while self.timer and self.timer[0] < min_time:
+            self.timer.popleft()
+        return len(self.timer)
+
+        
 
 
-# Example usage:
+# Your RecentCounter object will be instantiated and called as such:
 # obj = RecentCounter()
-# print(obj.ping(1))     # 1
-# print(obj.ping(100))   # 2
-# print(obj.ping(3001))  # 3
-# print(obj.ping(3002))  # 3
-
+# param_1 = obj.ping(t)
