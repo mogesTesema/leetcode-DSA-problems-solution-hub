@@ -1,4 +1,4 @@
-﻿# 🏆LeetCode DSA Problems & Solutions Hub
+﻿# 🏆LeetCode DSA Problems & Solutions
 
 ![Easy badge](https://img.shields.io/badge/Easy-115-brightgreen)  
 ![Medium badge](https://img.shields.io/badge/Medium-92-yellow)  
@@ -43,5 +43,6 @@ Happy coding — let’s solve problems, build intuition, and grow together.
 ---
 
 > **Auto-synced daily** — my accepted LeetCode solutions and full problem descriptions are stored directly in this repository.
+
 
 
