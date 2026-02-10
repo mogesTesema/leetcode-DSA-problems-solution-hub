@@ -1,17 +1,8 @@
-from typing import List
-
 class Solution:
     def missingNumber(self, nums: List[int]) -> int:
-        nums.sort()
-        left, right = 0, len(nums)
+       original_set = set(range(0,len(nums)+1))
+       x = original_set - set(nums)
+       for num in x:
+        return num
 
-        while left < right:
-            mid = (left + right) // 2
-            
-            if nums[mid] == mid:
-                left = mid + 1
-            else:
-                right = mid
-
-        return left
-
+        
