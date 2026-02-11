@@ -1,20 +1,31 @@
 class Solution:
     def findDuplicates(self, nums: List[int]) -> List[int]:
-        # sorth elements using cyclic sort and then check occurance of element
-        duplicated = []
-        # n = len(nums)
-        # i = 0
-        # current_position = 0
-        # while i < n:
-        #     current_position = nums[i] -1
-        #     if current_position != i:
-        #         nums[current_position], nums[i] = nums[i], nums[current_position]
-        #     else:
-        #         i += 1
+
+
+
         nums.sort()
-        for i in range(len(nums) - 1):
-            if nums[i] == nums[i+1]:
-                duplicated.append(nums[i])
-        return duplicated
-                
+        print(nums)
+        ans = []
+
+        pointer = 0
+
+        while pointer < len(nums)-1:
+
+            if nums[pointer] == nums[pointer+1]:
+                ans.append(nums[pointer])
+                pointer += 2
+                continue
+            pointer += 1
+        return ans
+            
+
+
+        # nums_freq = Counter(nums)
+        # ans = []
+
+        # for key,val in nums_freq.items():
+        #     if val == 2:
+        #         ans.append(key)
+        # return ans
+       
         
