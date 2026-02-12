@@ -1,15 +1,30 @@
 class Solution:
     def groupAnagrams(self, strs: List[str]) -> List[List[str]]:
-        ans_dict = defaultdict(list)
-        for word in strs:
-            sorted_word = sorted(word)
-            sorted_word = "".join(sorted_word)
-            ans_dict[sorted_word].append(word)
+
+
+        anagrams = {}
+
+        for index,word in enumerate(strs):
+
+            word = list(word)
+            word.sort()
+            word = "".join(word)
+
+            if word in anagrams:
+                anagrams[word].append(strs[index])
+            else:
+                anagrams[word] = [strs[index]]
+
+
+
         ans = []
-        for value in ans_dict.values():
-            ans.append(value)
+
+        for val in anagrams.values():
+            ans.append(val)
+            
+        
         return ans
 
-        
-
+    
+         
         
