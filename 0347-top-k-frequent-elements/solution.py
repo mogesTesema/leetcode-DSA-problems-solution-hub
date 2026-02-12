@@ -1,17 +1,20 @@
+from collections import Counter
+from typing import List
 class Solution:
     def topKFrequent(self, nums: List[int], k: int) -> List[int]:
-        hash_table = dict()
-        ans = []
-        for num in nums:
-            if num in hash_table:
-                hash_table[num] += 1
-            else:
-                hash_table[num] = 1
-        hash_table = sorted(hash_table.items(),key= lambda item :item[1],reverse=True)
-       
-        for i in range(k):
-            ans.append(hash_table[i][0])
-        return ans
 
-                
+        freq_elem = Counter(nums)
+        freq_list = []
+
+        for key,val in freq_elem.items():
+            freq_list.append([val,key])
+        freq_list.sort(reverse=True)
+
+        ans = []
+        for i in range(k):
+            ans.append(freq_list[i][1])
+        
+
+        return ans
+    
         
