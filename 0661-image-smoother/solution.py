@@ -1,18 +1,21 @@
 class Solution:
-    def imageSmoother(self, img: List[List[int]]) -> List[List[int]]:
-        rows = len(img)
-        cols = len(img[0])
+    def imageSmoother(self, img: list[list[int]]) -> list[list[int]]:
+        rows, cols = len(img), len(img[0])
         result = [[0] * cols for _ in range(rows)]
-
-        for i in range(rows):
-            for j in range(cols):
-                total = 0
+        
+        for r in range(rows):
+            for c in range(cols):
+                total_sum = 0
                 count = 0
-                for x in range(i - 1, i + 2):
-                    for y in range(j - 1, j + 2):
-                        if 0 <= x < rows and 0 <= y < cols:
-                            total += img[x][y]
-                            count += 1
-                result[i][j] = total // count
+                
+                for i in range(r-1,r+2):
+                    for j in range(c-1,c+2):
+                        if i < 0 or i == rows or j < 0 or j ==cols:
+                            continue
+                        total_sum +=img[i][j]
+                        count += 1
 
+                
+                result[r][c] = total_sum // count
+                
         return result
