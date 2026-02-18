@@ -1,25 +1,19 @@
+from typing import List
+
 class Solution:
     def sortPeople(self, names: List[str], heights: List[int]) -> List[str]:
-        # for i in range(len(names)-1):
-        #     for j in range(0, len(names)-i-1):
-        #         if heights[j]<heights[j+1]:
-        #             heights[j],heights[j+1]= heights[j+1], heights[j]
-        #             names[j], names[j+1] = names[j+1], names[j]
-        # return names
-        nameh = dict()
-        for i in range(len(names)):
-            nameh[heights[i]] = names[i]
-        name = sorted(nameh.keys(), reverse=True)
-        print(nameh)
-        print(name)
-        ans = []
-        for item in name:
-            
-            ans.append(nameh[item])
-        return ans
-
-
-
-
-
+        n = len(heights)
         
+        for i in range(n):
+            max_idx = i
+            for j in range(i + 1, n):
+                if heights[j] > heights[max_idx]: 
+                    max_idx = j
+            
+          
+            heights[i], heights[max_idx] = heights[max_idx], heights[i]
+            
+        
+            names[i], names[max_idx] = names[max_idx], names[i]
+        
+        return names
