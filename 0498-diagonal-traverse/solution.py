@@ -1,16 +1,26 @@
 class Solution:
     def findDiagonalOrder(self, mat: List[List[int]]) -> List[int]:
+        if not mat or not mat[0]:
+            return []
+        
         rows, cols = len(mat), len(mat[0])
-        diagonals = [[] for _ in range(rows + cols - 1)]
-        for r in range(rows):
-            for c in range(cols):
-                diagonals[r + c].append(mat[r][c])
-        ans = []
-        need_reversed = 1
-        for diagonal in diagonals:
-            if need_reversed:
-                ans.extend(diagonal[::-1])
+        res = []
+        
+        for d in range(rows + cols - 1):
+            intermediate = []
+            
+            r = 0 if d < cols else d - cols + 1
+            c = d if d < cols else cols - 1
+            
+            while r < rows and c >= 0:
+                intermediate.append(mat[r][c])
+                r += 1
+                c -= 1
+            
+            if d % 2 == 0:
+                res.extend(intermediate[::-1])
             else:
-                ans.extend(diagonal[:])
-            need_reversed = 1 - need_reversed
-        return ans
+                res.extend(intermediate)
+        
+        return res
+
