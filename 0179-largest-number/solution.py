@@ -4,9 +4,9 @@ class Solution:
         for num in nums:
             num = str(num)
             whole.append(num)
-        print(whole)
+    
         whole.sort(key=lambda x:x*12,reverse=True)
-        ans = "".join(num for num in whole)
+        ans = "".join(whole)
         return str(int(ans))
 
         
