@@ -6,30 +6,19 @@
 #         self.right = right
 class Solution:
     def maxDepth(self, root: Optional[TreeNode]) -> int:
-        # iterative approach using stack.
-        # if not root:
-        #     return 0
-        # longest = 0
-        # stack = []
-        # stack.append((root,1))
-        # while stack:
-        #     node, depth = stack.pop()
-        #     if node:
-        #         longest = max(longest, depth)
-        #         stack.append((node.right, depth+1))
-        #         stack.append((node.left, depth+1))
-        # return longest
-        ans = [0]
-        def depthSeeker(root,depth):
-            if root == None:
+
+        max_depth = 0
+
+        def travers(node,x):
+            nonlocal max_depth
+            if not node:
+                max_depth = max(max_depth,x)
                 return
-            depth += 1
-            depthSeeker(root.left,depth)
-            depthSeeker(root.right,depth)
-            if root.right == None and root.left == None:
-                ans.append(depth)
-        depthSeeker(root,0)
-        return max(ans)
+                
+            travers(node.left,x+1)
+            travers(node.right,x+1)
 
+        travers(root,0)
 
+        return max_depth
         
