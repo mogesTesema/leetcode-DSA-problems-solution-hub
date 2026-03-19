@@ -5,23 +5,31 @@
 #         self.left = left
 #         self.right = right
 class Solution:
-    def __init__(self):
-        self.evenValue = 0
     def sumEvenGrandparent(self, root: Optional[TreeNode]) -> int:
-        def evenFinder(root):
-            if root == None:
+
+        ans = 0
+        def traverse(node):
+            nonlocal ans
+            if not node:
                 return
-            if root.val % 2 == 0:
-                checker(root)
-            evenFinder(root.left)
-            evenFinder(root.right)
-        def checker(root):
-            if root.left:
-                if root.left.left: self.evenValue += root.left.left.val
-                if root.left.right: self.evenValue += root.left.right.val
-            if root.right:
-                if root.right.left: self.evenValue += root.right.left.val
-                if root.right.right: self.evenValue += root.right.right.val
-        evenFinder(root)
-        return self.evenValue
+
+            if node.val % 2 == 0:
+                if node.right:
+                    if node.right.right:
+                        ans += node.right.right.val
+                    if node.right.left:
+                        ans += node.right.left.val
+                if node.left:
+                    if node.left.right:
+                        ans += node.left.right.val
+                    if node.left.left:
+                        ans += node.left.left.val
+            traverse(node.left)
+            traverse(node.right)
+        
+        traverse(root)
+
+        return ans
+
+            
         
